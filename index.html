@@ -48,16 +48,19 @@
                 `/data?category=${category}&page=${currentPage}`
               );
             }
-            const data = await response.json();
+
+            const data = await response.json(); //  Получаем данные в формате JSON
+
             let contentHTML = "";
 
             if (category in [0, 1, 2, 4]) {
               data.forEach((item, index) => {
+                const decodedItem = item.map((str) => JSON.parse(`"${str}"`)); // Декодируем каждый элемент массива
                 contentHTML += `<div>
-                                         <h3>${item[1]}</h3>
-                                         <p>${item[0]}</p>
-                                         <button onclick="showDetails(${category}, ${index})">Подробнее</button>
-                                       </div>`;
+                             <h3>${decodedItem[1]}</h3>
+                             <p>${decodedItem[0]}</p>
+                             <button onclick="showDetails(${category}, ${index})">Подробнее</button>
+                           </div>`;
               });
               contentHTML += `<button onclick="prevPage(${category})" ${
                 currentPage === 1 ? "disabled" : ""
@@ -65,7 +68,8 @@
               contentHTML += `<button onclick="nextPage(${category})">Далее</button>`;
             } else if (category === 3) {
               data.forEach((item) => {
-                contentHTML += `<button onclick="showAboutUsDetails('${item}')">${item}</button>`;
+                const decodedItem = JSON.parse(`"${item}"`); // Декодируем элемент
+                contentHTML += `<button onclick="showAboutUsDetails('${decodedItem}')">${decodedItem}</button>`;
               });
             }
             contentDiv.innerHTML = contentHTML;
@@ -76,7 +80,7 @@
               `/data?category=${category}&page=${currentPage}`
             );
             const data = await response.json();
-            const item = data[index];
+            const item = data[index].map((str) => JSON.parse(`"${str}"`)); // Декодируем каждый элемент массива
             contentDiv.innerHTML = `<p>${item[2]}</p><button onclick="loadData(${category})">Назад</button>`;
           }
 
