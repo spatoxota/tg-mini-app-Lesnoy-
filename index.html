@@ -3,105 +3,240 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Регистрация - Telegram Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Регистрация</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f2f5;
-        margin: 0;
-        padding: 20px;
-        color: #333;
+              :root {
+                  --primary-color: #2196F3;
+                  --error-color: #f44336;
+                  --success-color: #4CAF50;
+                  --shadow-color: rgba(0, 0, 0, 0.1);
+              }
+
+              body {
+                  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+                  background: var(--tg-theme-bg-color, #f5f5f5);
+                  color: var(--tg-theme-text-color, #2c3e50);
+                  margin: 0;
+                  padding: 20px;
+                  min-height: 100vh;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+              }
+
+              .registration-form {
+                  background: var(--tg-theme-secondary-bg-color, #ffffff);
+                  max-width: 400px;
+                  width: 100%;
+                  padding: 30px;
+                  border-radius: 16px;
+                  box-shadow: 0 8px 24px var(--shadow-color);
+                  animation: fadeIn 0.5s ease-out;
+              }
+
+              @keyframes fadeIn {
+                  from {
+                      opacity: 0;
+                      transform: translateY(20px);
+                  }
+                  to {
+                      opacity: 1;
+                      transform: translateY(0);
+                  }
+              }
+
+              .form-title {
+                  text-align: center;
+                  margin-bottom: 30px;
+                  font-size: 28px;
+                  font-weight: 600;
+                  color: var(--tg-theme-text-color, #1a1a1a);
+              }
+
+              .form-group {
+                  margin-bottom: 24px;
+                  position: relative;
+              }
+
+              label {
+                  display: block;
+                  margin-bottom: 8px;
+                  font-weight: 500;
+                  font-size: 14px;
+                  color: var(--tg-theme-hint-color, #666666);
+                  transition: color 0.3s ease;
+              }
+
+              input {
+                  width: 100%;
+                  padding: 12px 16px;
+                  border: 2px solid var(--tg-theme-hint-color, #e0e0e0);
+                  border-radius: 12px;
+                  font-size: 16px;
+                  background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+                  color: var(--tg-theme-text-color, #1a1a1a);
+                  box-sizing: border-box;
+                  transition: all 0.3s ease;
+              }
+
+              input:focus {
+                  outline: none;
+                  border-color: var(--tg-theme-button-color, var(--primary-color));
+                  box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.1);
+              }
+
+              .submit-button {
+                  width: 100%;
+                  padding: 14px;
+                  background: var(--tg-theme-button-color, var(--primary-color));
+                  color: var(--tg-theme-button-text-color, #ffffff);
+                  border: none;
+                  border-radius: 12px;
+                  font-size: 16px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+              }
+
+              .submit-button:hover {
+                  transform: translateY(-2px);
+                  box-shadow: 0 6px 12px rgba(33, 150, 243, 0.2);
       }
-      .container {
-        max-width: 400px;
-        margin: 0 auto;
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      .submit-button:active {
+          transform: translateY(0);
+          box-shadow: 0 3px 6px rgba(33, 150, 243, 0.1);
       }
-      h1 {
-        text-align: center;
-        color: #0088cc;
+
+      /* Анимация для полей ввода */
+      .form-group input:focus + label {
+          color: var(--primary-color);
       }
-      form {
-        display: flex;
-        flex-direction: column;
+
+      /* Стили для сообщений об ошибках */
+      .error-message {
+          color: var(--error-color);
+          font-size: 12px;
+          margin-top: 5px;
+          display: none;
+          padding-left: 16px;
+          animation: slideIn 0.3s ease-out;
       }
-      label {
-        margin-top: 10px;
-        margin-bottom: 5px;
+
+      @keyframes slideIn {
+          from {
+              opacity: 0;
+              transform: translateY(-10px);
+          }
+          to {
+              opacity: 1;
+              transform: translateY(0);
+          }
       }
-      input {
-        padding: 8px;
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+
+      /* Стили для успешной валидации */
+      input.valid {
+          border-color: var(--success-color);
       }
-      button {
-        background-color: #0088cc;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 16px;
-      }
-      button:hover {
-        background-color: #006699;
-      }
+
+      /* Адаптивность для мобильных устройств */
+      @media (max-width: 480px) {
+          .registration-form {
+              padding: 20px;
+              margin: 10px;
+              border-radius: 12px;
+          }▌
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>Регистрация</h1>
+    <div class="registration-form">
+      <h1 class="form-title">Регистрация</h1>
       <form id="registrationForm">
-        <label for="firstName">Имя:</label>
-        <input type="text" id="firstName" name="firstName" required />
+        <div class="form-group">
+          <label for="firstName">Имя</label>
+          <input
+            type="text"
+            id="firstName"
+            name="firstName"
+            required
+            placeholder="Введите ваше имя"
+          />
+        </div>
 
-        <label for="lastName">Фамилия:</label>
-        <input type="text" id="lastName" name="lastName" required />
+        <div class="form-group">
+          <label for="lastName">Фамилия</label>
+          <input
+            type="text"
+            id="lastName"
+            name="lastName"
+            required
+            placeholder="Введите вашу фамилию"
+          />
+        </div>
 
-        <label for="email">Почта:</label>
-        <input type="email" id="email" name="email" required />
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            placeholder="Введите ваш email"
+          />
+        </div>
 
-        <button type="submit">Зарегистрироваться</button>
+        <button type="submit" class="submit-button">Зарегистрироваться</button>
       </form>
     </div>
-
     <script>
       document
         .getElementById("registrationForm")
         .addEventListener("submit", function (e) {
           e.preventDefault();
 
-          var firstName = document.getElementById("firstName").value;
-          var lastName = document.getElementById("lastName").value;
-          var email = document.getElementById("email").value;
+          const firstName = document.getElementById("firstName").value;
+          const lastName = document.getElementById("lastName").value;
+          const email = document.getElementById("email").value;
 
-          // Здесь вы можете добавить логику для отправки данных на сервер
-
-          // Для Telegram Mini App:
-          if (window.Telegram && window.Telegram.WebApp) {
-            var data = {
-              firstName: firstName,
-              lastName: lastName,
-              email: email,
-            };
-            window.Telegram.WebApp.sendData(JSON.stringify(data));
-            window.Telegram.WebApp.close();
-          } else {
-            alert(
-              "Регистрация успешна!\nИмя: " +
-                firstName +
-                "\nФамилия: " +
-                lastName +
-                "\nПочта: " +
-                email
-            );
+          // Проверка данных
+          if (!firstName || !lastName || !email) {
+            alert("Пожалуйста, заполните все поля");
+            return;
           }
+
+          // Проверка формата email
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            alert("Пожалуйста, введите корректный email адрес");
+            return;
+          }
+
+          // Создаем объект с данными формы
+          const formData = {
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+          };
+
+          // Здесь можно добавить отправку данных на сервер
+          console.log("Отправка данных:", formData);
+
+          // Если используется Telegram Web App
+          if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.sendData(JSON.stringify(formData));
+          }
+
+          // Очистка формы после отправки
+          document.getElementById("registrationForm").reset();
         });
+
+      // Инициализация Telegram Web App
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      }
     </script>
   </body>
 </html>
