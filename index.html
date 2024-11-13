@@ -193,7 +193,7 @@
     <script>
       document
         .getElementById("registrationForm")
-        .addEventListener("submit", function (e) {
+        .addEventListener("submit", async function (e) {
           e.preventDefault();
 
           const firstName = document.getElementById("firstName").value;
@@ -220,16 +220,46 @@
             email: email,
           };
 
-          // Здесь можно добавить отправку данных на сервер
-          console.log("Отправка данных:", formData);
+          // Формируем текст сообщения для отправки в Telegram
+          const message = `
+Новая регистрация:
+Имя: ${firstName}
+Фамилия: ${lastName}
+Email: ${email}
+    `;
 
-          // Если используется Telegram Web App
-          if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.sendData(JSON.stringify(formData));
+          try {
+            // Отправляем данные в Telegram бот
+            const response = await fetch(
+              `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  chat_id: CHAT_ID,
+                  text: message,
+                  parse_mode: "HTML",
+                }),
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error("Ошибка при отправке данных в Telegram");
+            }
+
+            // Если используется Telegram Web App
+            if (window.Telegram && window.Telegram.WebApp) {
+              window.Telegram.WebApp.sendData(JSON.stringify(formData));
+            }
+
+            alert("Регистрация успешно завершена!");
+            document.getElementById("registrationForm").reset();
+          } catch (error) {
+            console.error("Ошибка:", error);
+            alert("Произошла ошибка при отправке данных");
           }
-
-          // Очистка формы после отправки
-          document.getElementById("registrationForm").reset();
         });
 
       // Инициализация Telegram Web App
