@@ -1,55 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ДК Лесной</title>
+    <title>Регистрация - Telegram Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
+        background-color: #f0f2f5;
         margin: 0;
         padding: 20px;
-        background-color: var(--tg-theme-bg-color, #ffffff);
-        color: var(--tg-theme-text-color, #000000);
+        color: #333;
       }
-      .button {
-        display: block;
-        width: 100%;
+      .container {
+        max-width: 400px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #0088cc;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+      label {
+        margin-top: 10px;
+        margin-bottom: 5px;
+      }
+      input {
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      button {
+        background-color: #0088cc;
+        color: white;
         padding: 10px;
-        margin-bottom: 10px;
-        background-color: var(--tg-theme-button-color, #3390ec);
-        color: var(--tg-theme-button-text-color, #ffffff);
         border: none;
-        border-radius: 5px;
-        font-size: 16px;
+        border-radius: 4px;
         cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #006699;
       }
     </style>
   </head>
   <body>
-    <div id="app">
-      <button class="button" onclick="sendCommand('События')">События</button>
-      <button class="button" onclick="sendCommand('Анонсы')">Анонсы</button>
-      <button class="button" onclick="sendCommand('Объявления')">
-        Объявления
-      </button>
-      <button class="button" onclick="sendCommand('Блог')">Блог</button>
-      <button class="button" onclick="sendCommand('О нас')">О нас</button>
+    <div class="container">
+      <h1>Регистрация</h1>
+      <form id="registrationForm">
+        <label for="firstName">Имя:</label>
+        <input type="text" id="firstName" name="firstName" required />
+
+        <label for="lastName">Фамилия:</label>
+        <input type="text" id="lastName" name="lastName" required />
+
+        <label for="email">Почта:</label>
+        <input type="email" id="email" name="email" required />
+
+        <button type="submit">Зарегистрироваться</button>
+      </form>
     </div>
 
     <script>
-      let tg = window.Telegram.WebApp;
+      document
+        .getElementById("registrationForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
 
-      tg.expand();
+          var firstName = document.getElementById("firstName").value;
+          var lastName = document.getElementById("lastName").value;
+          var email = document.getElementById("email").value;
 
-      function sendCommand(command) {
-        tg.sendData(command);
-      }
+          // Здесь вы можете добавить логику для отправки данных на сервер
 
-      tg.onEvent("mainButtonClicked", function () {
-        tg.sendData("Main button clicked");
-      });
+          // Для Telegram Mini App:
+          if (window.Telegram && window.Telegram.WebApp) {
+            var data = {
+              firstName: firstName,
+              lastName: lastName,
+              email: email,
+            };
+            window.Telegram.WebApp.sendData(JSON.stringify(data));
+            window.Telegram.WebApp.close();
+          } else {
+            alert(
+              "Регистрация успешна!\nИмя: " +
+                firstName +
+                "\nФамилия: " +
+                lastName +
+                "\nПочта: " +
+                email
+            );
+          }
+        });
     </script>
   </body>
 </html>
