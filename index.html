@@ -85,37 +85,17 @@
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
 
-        // Здесь должна быть ваша логика валидации и отправки данных на сервер
-        // Пример проверки на пустые поля:
+        // Проверка на пустые поля (можно добавить другую валидацию)
         if (!username || !password) {
           errorDiv.textContent = "Пожалуйста, заполните все поля.";
           errorDiv.style.display = "block";
           return;
         }
 
-        // Пример отправки данных на сервер (замените на ваш URL):
-        fetch("/https://spatoxota.github.io/tg-mini-app-Lesnoy-/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username, password }),
-        })
-          .then((response) => {
-            if (response.ok) {
-              // Редирект или другое действие после успешной регистрации
-              window.location.href = "https://vk.com/al_im.php"; // Пример редиректа
-            } else {
-              response.json().then((data) => {
-                errorDiv.textContent = data.error || "Ошибка регистрации.";
-                errorDiv.style.display = "block";
-              });
-            }
-          })
-          .catch((error) => {
-            errorDiv.textContent = "Ошибка сети.";
-            errorDiv.style.display = "block";
-          });
+        // Симуляция успешного ответа сервера и перенаправление
+        setTimeout(() => {
+          window.location.href = "https://vk.com/feed"; // Замените /profile на нужный URL
+        }, 500);
       });
     </script>
   </body>
