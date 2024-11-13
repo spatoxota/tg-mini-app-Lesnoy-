@@ -1,4 +1,3 @@
-<!-- static/index.html -->
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -13,124 +12,124 @@
     <div id="content"></div>
 
     <script>
-      // ... (весь код JavaScript, включая showMenu, loadData, showDetails,
-      // showAboutUsDetails, prevPage, nextPage, sendNotification  -  без изменений)
+      document.addEventListener("DOMContentLoaded", () => {
+        const tg = window.Telegram.WebApp;
 
-      // static/index.html (JavaScript code)
+        if (tg) {
+          tg.expand();
+          tg.ready();
 
-      const tg = window.Telegram.WebApp;
-      tg.expand();
+          const contentDiv = document.getElementById("content");
+          let currentPage = 1;
 
-      const contentDiv = document.getElementById("content");
-      let currentPage = 1;
+          function showMenu() {
+            const menuButtons = [
+              { text: "События", callback: () => loadData(0) },
+              { text: "Анонсы", callback: () => loadData(1) },
+              { text: "Объявления", callback: () => loadData(2) },
+              { text: "О нас", callback: () => loadData(3) },
+              { text: "Блог", callback: () => loadData(4) },
+            ];
 
-      function showMenu() {
-        const menuButtons = [
-          { text: "События", callback: () => loadData(0) },
-          { text: "Анонсы", callback: () => loadData(1) },
-          { text: "Объявления", callback: () => loadData(2) },
-          { text: "О нас", callback: () => loadData(3) },
-          { text: "Блог", callback: () => loadData(4) },
-        ];
+            let menuHTML = "";
+            menuButtons.forEach((button) => {
+              menuHTML += `<button onclick="${button.callback}">${button.text}</button>`;
+            });
 
-        let menuHTML = "";
-        menuButtons.forEach((button) => {
-          menuHTML += `<button onclick="${button.callback}">${button.text}</button>`;
-        });
+            contentDiv.innerHTML = menuHTML;
+          }
 
-        contentDiv.innerHTML = menuHTML;
-      }
+          async function loadData(category) {
+            let response;
+            if (category === 3) {
+              response = await fetch("/about_us");
+            } else {
+              response = await fetch(
+                `/data?category=${category}&page=${currentPage}`
+              );
+            }
+            const data = await response.json();
+            let contentHTML = "";
 
-      async function loadData(category) {
-        let response;
-        if (category === 3) {
-          response = await fetch("/about_us");
+            if (category in [0, 1, 2, 4]) {
+              data.forEach((item, index) => {
+                contentHTML += `<div>
+                                         <h3>${item[1]}</h3>
+                                         <p>${item[0]}</p>
+                                         <button onclick="showDetails(${category}, ${index})">Подробнее</button>
+                                       </div>`;
+              });
+              contentHTML += `<button onclick="prevPage(${category})" ${
+                currentPage === 1 ? "disabled" : ""
+              }>Назад</button>`;
+              contentHTML += `<button onclick="nextPage(${category})">Далее</button>`;
+            } else if (category === 3) {
+              data.forEach((item) => {
+                contentHTML += `<button onclick="showAboutUsDetails('${item}')">${item}</button>`;
+              });
+            }
+            contentDiv.innerHTML = contentHTML;
+          }
+
+          async function showDetails(category, index) {
+            const response = await fetch(
+              `/data?category=${category}&page=${currentPage}`
+            );
+            const data = await response.json();
+            const item = data[index];
+            contentDiv.innerHTML = `<p>${item[2]}</p><button onclick="loadData(${category})">Назад</button>`;
+          }
+
+          async function showAboutUsDetails(title) {
+            let detailText = "";
+            if (title === "О нас") {
+              detailText = await (
+                await fetch("/about_us_details?section=0")
+              ).text();
+            } else if (title === "Клуб по интересам") {
+              detailText = await (
+                await fetch("/about_us_details?section=1")
+              ).text();
+            } else if (title === "Информация") {
+              detailText = await (
+                await fetch("/about_us_details?section=2")
+              ).text();
+            }
+
+            contentDiv.innerHTML = `<p>${detailText}</p><button onclick="loadData(3)">Назад</button>`;
+          }
+
+          function prevPage(category) {
+            if (currentPage > 1) {
+              currentPage--;
+              loadData(category);
+            }
+          }
+
+          function nextPage(category) {
+            currentPage++;
+            loadData(category);
+          }
+
+          async function sendNotification(userId, message) {
+            const response = await fetch("/send_notification", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ user_id: userId, message: message }),
+            });
+
+            const data = await response.json();
+            console.log(data);
+          }
+
+          showMenu();
+          const userId = tg.initDataUnsafe.user.id;
+          sendNotification(userId, "Привет из Mini App!");
         } else {
-          response = await fetch(
-            `/data?category=${category}&page=${currentPage}`
-          );
+          document.body.innerHTML =
+            "<p>Ошибка: Telegram WebApp недоступен.</p>";
         }
-        const data = await response.json();
-        let contentHTML = "";
-
-        if (category in [0, 1, 2, 4]) {
-          data.forEach((item, index) => {
-            contentHTML += `<div>
-                             <h3>${item[1]}</h3>
-                             <p>${item[0]}</p>
-                             <button onclick="showDetails(${category}, ${index})">Подробнее</button>
-                           </div>`;
-          });
-          contentHTML += `<button onclick="prevPage(${category})" ${
-            currentPage === 1 ? "disabled" : ""
-          }>Назад</button>`;
-          contentHTML += `<button onclick="nextPage(${category})">Далее</button>`;
-        } else if (category === 3) {
-          data.forEach((item) => {
-            contentHTML += `<button onclick="showAboutUsDetails('${item}')">${item}</button>`;
-          });
-        }
-        contentDiv.innerHTML = contentHTML;
-      }
-
-      async function showDetails(category, index) {
-        const response = await fetch(
-          `/data?category=${category}&page=${currentPage}`
-        );
-        const data = await response.json();
-        const item = data[index];
-        contentDiv.innerHTML = `<p>${item[2]}</p><button onclick="loadData(${category})">Назад</button>`;
-      }
-
-      async function showAboutUsDetails(title) {
-        let detailText = "";
-        if (title === "О нас") {
-          detailText = await (
-            await fetch("/about_us_details?section=0")
-          ).text();
-        } else if (title === "Клуб по интересам") {
-          detailText = await (
-            await fetch("/about_us_details?section=1")
-          ).text();
-        } else if (title === "Информация") {
-          detailText = await (
-            await fetch("/about_us_details?section=2")
-          ).text();
-        }
-
-        contentDiv.innerHTML = `<p>${detailText}</p><button onclick="loadData(3)">Назад</button>`;
-      }
-
-      function prevPage(category) {
-        if (currentPage > 1) {
-          currentPage--;
-          loadData(category);
-        }
-      }
-
-      function nextPage(category) {
-        currentPage++;
-        loadData(category);
-      }
-
-      async function sendNotification(userId, message) {
-        const response = await fetch("/send_notification", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ user_id: userId, message: message }),
-        });
-
-        const data = await response.json();
-        console.log(data);
-      }
-
-      tg.ready();
-      showMenu();
-
-      const userId = window.Telegram.WebApp.initDataUnsafe.user.id;
-      sendNotification(userId, "Привет из Mini App!");
+      });
     </script>
   </body>
 </html>
