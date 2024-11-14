@@ -64,12 +64,12 @@
                 content = "<p>Ничего не найдено.</p>";
               }
             } else {
-              // Другие категории (включая Блог)
+              // Другие категории (включая Блог) -  здесь изменений не нужно
               if (data.length) {
                 data.forEach((item) => {
-                  if (category === 4) {
-                    // Специально для Блога
-                    content += `<h3>${item[1]}</h3><p>${item[0]}</p><p>${item[2]}</p><hr>`; // Используем индексы списка
+                  if (Array.isArray(item)) {
+                    // Проверяем, является ли item массивом (для Блога)
+                    content += `<h3>${item[1]}</h3><p>${item[0]}</p><p>${item[2]}</p><hr>`;
                   } else {
                     content += `<h3>${item.title}</h3><p>${item.date}</p><p>${item.content}</p><hr>`;
                   }
