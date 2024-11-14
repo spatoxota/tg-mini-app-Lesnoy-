@@ -64,10 +64,15 @@
                 content = "<p>Ничего не найдено.</p>";
               }
             } else {
-              // Другие категории
+              // Другие категории (включая Блог)
               if (data.length) {
-                data.forEach((item, index) => {
-                  content += `<h3>${item.title}</h3><p>${item.date}</p><p>${item.content}</p><hr>`;
+                data.forEach((item) => {
+                  if (category === 4) {
+                    // Специально для Блога
+                    content += `<h3>${item[1]}</h3><p>${item[0]}</p><p>${item[2]}</p><hr>`; // Используем индексы списка
+                  } else {
+                    content += `<h3>${item.title}</h3><p>${item.date}</p><p>${item.content}</p><hr>`;
+                  }
                 });
                 // Пагинация
                 content += '<div class="pagination">';
@@ -101,10 +106,26 @@
           });
       }
       function getSubData(subcategory) {
-        //  Очищаем пагинацию при переходе в подкатегорию "О нас"
         currentPage = 1;
         currentCategory = subcategory;
         fetchData(subcategory, 1);
+
+        fetch(`http://127.0.0.1:5000/get-data?category=${subcategory}&page=1`)
+          .then((response) => response.json())
+          .then((data) => {
+            let content = "<h2>Результаты:</h2>";
+            if (data.length && data[0].content) {
+              content += `<p>${data[0].content}</p>`; // Отображаем контент подкатегории
+            } else {
+              content += "<p>Информация отсутствует.</p>";
+            }
+            document.getElementById("results").innerHTML = content;
+          })
+          .catch((err) => {
+            document.getElementById("results").innerHTML =
+              "Ошибка загрузки данных.";
+            console.error(err);
+          });
       }
     </script>
   </body>
