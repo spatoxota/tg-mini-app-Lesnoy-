@@ -39,7 +39,7 @@
         document.getElementById("results").innerHTML = "Загрузка...";
 
         // Здесь отправляем запрос на сервер (бэкенд) для получения данных
-        fetch(`/get-data?category=${category}`)
+        fetch(`http://127.0.0.1:5000/get-data?category=${category}`)
           .then((response) => response.json())
           .then((data) => {
             let content = "<h2>Результаты:</h2>";
