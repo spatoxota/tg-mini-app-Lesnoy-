@@ -34,24 +34,63 @@
 
     <script>
       const tg = window.Telegram.WebApp;
+      let currentPage = 1;
+      let currentCategory = 0;
 
       function getData(category) {
+        currentCategory = category;
+        currentPage = 1; // Сбрасываем страницу при смене категории
+        fetchData(category, currentPage);
+      }
+
+      function fetchData(category, page) {
         document.getElementById("results").innerHTML = "Загрузка...";
 
-        // Здесь отправляем запрос на сервер (бэкенд) для получения данных
-        fetch(`http://127.0.0.1:5000/get-data?category=${category}`)
+        fetch(
+          `http://127.0.0.1:5000/get-data?category=${category}&page=${page}`
+        )
           .then((response) => response.json())
           .then((data) => {
             let content = "<h2>Результаты:</h2>";
-            if (data.length) {
-              data.forEach((item) => {
-                // Проверяем наличие полей перед выводом
-                content += `<h3>${item.title || ""}</h3><p>${
-                  item.date || ""
-                }</p><p>${item.content || ""}</p><hr>`;
-              });
+            if (category === 3) {
+              // "О нас"
+              if (data.length) {
+                data.forEach((item, index) => {
+                  content += `<button onclick="getSubData(${index + 5})">${
+                    item.title
+                  }</button><br>`; //  5, 6, 7 для подкатегорий "О нас"
+                });
+              } else {
+                content = "<p>Ничего не найдено.</p>";
+              }
             } else {
-              content = "<p>Ничего не найдено.</p>";
+              // Другие категории
+              if (data.length) {
+                data.forEach((item, index) => {
+                  content += `<h3>${item.title}</h3><p>${item.date}</p><p>${item.content}</p><hr>`;
+                });
+                // Пагинация
+                content += '<div class="pagination">';
+                if (page > 1) {
+                  content += `<button onclick="fetchData(${category}, ${
+                    page - 1
+                  })">Назад</button>`;
+                }
+                if (data.length >= 5) {
+                  // Проверяем, есть ли следующая страница (предполагаем 5 элементов на странице)
+                  content += `<button onclick="fetchData(${category}, ${
+                    page + 1
+                  })">Далее</button>`;
+                }
+                content += "</div>";
+              } else {
+                content = "<p>Ничего не найдено.</p>";
+                if (page > 1) {
+                  content += `<button onclick="fetchData(${category}, ${
+                    page - 1
+                  })">Назад</button>`;
+                }
+              }
             }
             document.getElementById("results").innerHTML = content;
           })
@@ -60,6 +99,12 @@
               "Ошибка загрузки данных.";
             console.error(err);
           });
+      }
+      function getSubData(subcategory) {
+        //  Очищаем пагинацию при переходе в подкатегорию "О нас"
+        currentPage = 1;
+        currentCategory = subcategory;
+        fetchData(subcategory, 1);
       }
     </script>
   </body>
