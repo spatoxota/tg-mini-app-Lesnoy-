@@ -1,157 +1,63 @@
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <title>Мой Mini App</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-      /* Ваши стили */
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+      .buttons {
+        margin-top: 20px;
+      }
       button {
         margin: 10px;
-        padding: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
       }
     </style>
   </head>
   <body>
-    <div id="content"></div>
+    <h1>Выберите категорию</h1>
+    <div class="buttons">
+      <button onclick="getData(0)">События</button>
+      <button onclick="getData(1)">Анонсы</button>
+      <button onclick="getData(2)">Объявления</button>
+      <button onclick="getData(3)">О нас</button>
+      <button onclick="getData(4)">Блог</button>
+    </div>
+
+    <div id="results"></div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const tg = window.Telegram.WebApp; // Инициализация Telegram WebApp
+      const tg = window.Telegram.WebApp;
 
-        if (tg) {
-          tg.expand(); // Развернуть мини-приложение
-          tg.ready(); // Сообщить, что приложение готово для работы
+      function getData(category) {
+        document.getElementById("results").innerHTML = "Загрузка...";
 
-          const contentDiv = document.getElementById("content");
-          let currentPage = 1;
-
-          // Показать меню
-          function showMenu() {
-            const menuButtons = [
-              { text: "События", category: 0 },
-              { text: "Анонсы", category: 1 },
-              { text: "Объявления", category: 2 },
-              { text: "О нас", category: 3 },
-              { text: "Блог", category: 4 },
-            ];
-
-            let menuHTML = "";
-            menuButtons.forEach((button) => {
-              menuHTML += `<button onclick="loadData(${button.category})">${button.text}</button>`;
-            });
-
-            contentDiv.innerHTML = menuHTML; // Добавляем кнопки в контент
-          }
-
-          // Функция загрузки данных
-          async function loadData(category) {
-            let response;
-            if (category === 3) {
-              response = await fetch("/about_us"); // Запрос для раздела "О нас"
-            } else {
-              response = await fetch(
-                `/data?category=${category}&page=${currentPage}`
-              ); // Запрос для других категорий
-            }
-
-            const data = await response.json(); // Ожидаем данных в формате JSON
-
-            let contentHTML = "";
-
-            // Проверяем категории и выводим соответствующие данные
-            if ([0, 1, 2, 4].includes(category)) {
-              data.forEach((item, index) => {
-                contentHTML += `<div>
-                                <h3>${item[1]}</h3> <!-- Заголовок -->
-                                <p>${item[0]}</p>   <!-- Дата -->
-                                <button onclick="showDetails(${category}, ${index})">Подробнее</button>
-                            </div>`;
-              });
-
-              // Пагинация
-              contentHTML += `<button onclick="prevPage(${category})" ${
-                currentPage === 1 ? "disabled" : ""
-              }>Назад</button>`;
-              contentHTML += `<button onclick="nextPage(${category})">Далее</button>`;
-            } else if (category === 3) {
-              // Для раздела "О нас"
+        // Здесь отправляем запрос на сервер (бэкенд) для получения данных
+        fetch(`/get-data?category=${category}`)
+          .then((response) => response.json())
+          .then((data) => {
+            let content = "<h2>Результаты:</h2>";
+            if (data.length) {
               data.forEach((item) => {
-                contentHTML += `<button onclick="showAboutUsDetails('${item}')">${item}</button>`;
+                content += `<h3>${item.title}</h3><p>${item.date}</p><p>${item.content}</p><hr>`;
               });
+            } else {
+              content = "<p>Ничего не найдено.</p>";
             }
-
-            contentDiv.innerHTML = contentHTML; // Добавляем данные в DOM
-          }
-
-          // Функция показа деталей для выбранного элемента
-          async function showDetails(category, index) {
-            const response = await fetch(
-              `/data?category=${category}&page=${currentPage}`
-            );
-            const data = await response.json();
-            const item = data[index]; // Получаем нужный элемент по индексу
-
-            contentDiv.innerHTML = `<h3>${item[1]}</h3><p>${item[2]}</p><button onclick="loadData(${category})">Назад</button>`;
-          }
-
-          // Функция показа деталей раздела "О нас"
-          async function showAboutUsDetails(title) {
-            let detailText = "";
-            if (title === "О нас") {
-              detailText = await (
-                await fetch("/about_us_details?section=0")
-              ).text();
-            } else if (title === "Клуб по интересам") {
-              detailText = await (
-                await fetch("/about_us_details?section=1")
-              ).text();
-            } else if (title === "Информация") {
-              detailText = await (
-                await fetch("/about_us_details?section=2")
-              ).text();
-            }
-
-            contentDiv.innerHTML = `<p>${detailText}</p><button onclick="loadData(3)">Назад</button>`;
-          }
-
-          // Функция перехода на предыдущую страницу
-          function prevPage(category) {
-            if (currentPage > 1) {
-              currentPage--;
-              loadData(category);
-            }
-          }
-
-          // Функция перехода на следующую страницу
-          function nextPage(category) {
-            currentPage++;
-            loadData(category);
-          }
-
-          // Отправка уведомления пользователю (пример использования Telegram API)
-          async function sendNotification(userId, message) {
-            const response = await fetch("/send_notification", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ user_id: userId, message: message }),
-            });
-
-            const data = await response.json();
-            console.log(data);
-          }
-
-          // Отображаем меню при загрузке
-          showMenu();
-
-          // Получаем ID пользователя через Telegram WebApp API и отправляем уведомление
-          const userId = tg.initDataUnsafe.user.id;
-          sendNotification(userId, "Привет из Mini App!");
-        } else {
-          document.body.innerHTML =
-            "<p>Ошибка: Telegram WebApp недоступен.</p>";
-        }
-      });
+            document.getElementById("results").innerHTML = content;
+          })
+          .catch((err) => {
+            document.getElementById("results").innerHTML =
+              "Ошибка загрузки данных.";
+            console.error(err);
+          });
+      }
     </script>
   </body>
 </html>
