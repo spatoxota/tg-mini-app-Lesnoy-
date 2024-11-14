@@ -45,7 +45,10 @@
             let content = "<h2>Результаты:</h2>";
             if (data.length) {
               data.forEach((item) => {
-                content += `<h3>${item.title}</h3><p>${item.date}</p><p>${item.content}</p><hr>`;
+                // Проверяем наличие полей перед выводом
+                content += `<h3>${item.title || ""}</h3><p>${
+                  item.date || ""
+                }</p><p>${item.content || ""}</p><hr>`;
               });
             } else {
               content = "<p>Ничего не найдено.</p>";
