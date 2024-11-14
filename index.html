@@ -39,7 +39,7 @@
 
       function getData(category) {
         currentCategory = category;
-        currentPage = 1; // Сбрасываем страницу при смене категории
+        currentPage = 1;
         fetchData(category, currentPage);
       }
 
@@ -51,82 +51,77 @@
         )
           .then((response) => response.json())
           .then((data) => {
+            const results = data.data;
+            const hasNext = data.has_next; // Получаем информацию о следующей странице
             let content = "<h2>Результаты:</h2>";
+
             if (category === 3) {
-              // "О нас"
-              if (data.length) {
-                data.forEach((item, index) => {
-                  content += `<button onclick="getSubData(${index + 5})">${
-                    item.title
-                  }</button><br>`; //  5, 6, 7 для подкатегорий "О нас"
+              if (results.length) {
+                results.forEach((item) => {
+                  content += `<button onclick="getSubData(${item.id})">${item.title}</button><br>`;
                 });
               } else {
                 content = "<p>Ничего не найдено.</p>";
               }
-            } else {
-              // Другие категории (включая Блог) -  здесь изменений не нужно
-              if (data.length) {
-                data.forEach((item) => {
-                  if (Array.isArray(item)) {
-                    // Проверяем, является ли item массивом (для Блога)
-                    content += `<h3>${item[1]}</h3><p>${item[0]}</p><p>${item[2]}</p><hr>`;
-                  } else {
-                    content += `<h3>${item.title}</h3><p>${item.date}</p><p>${item.content}</p><hr>`;
-                  }
-                });
-                // Пагинация
+            } else if (results.length) {
+              results.forEach((item) => {
+                if (category >= 5) {
+                  //Обработка подкатегорий "О нас"
+                  content += `<h3>${item.title}</h3><p>${item.content}</p><hr>`;
+                } else {
+                  // Обработка остальных категорий, включая блог
+                  content += `<h3>${item[1]}</h3><p>${item[0]}</p><p>${item[2]}</p><hr>`;
+                }
+              });
+
+              // Пагинация (только для категорий, отличных от "О нас")
+              if (category < 3 || category === 4) {
                 content += '<div class="pagination">';
                 if (page > 1) {
                   content += `<button onclick="fetchData(${category}, ${
                     page - 1
                   })">Назад</button>`;
                 }
-                if (data.length >= 5) {
-                  // Проверяем, есть ли следующая страница (предполагаем 5 элементов на странице)
+                if (hasNext) {
+                  // Используем hasNext для проверки следующей страницы
                   content += `<button onclick="fetchData(${category}, ${
                     page + 1
                   })">Далее</button>`;
                 }
                 content += "</div>";
-              } else {
-                content = "<p>Ничего не найдено.</p>";
-                if (page > 1) {
-                  content += `<button onclick="fetchData(${category}, ${
-                    page - 1
-                  })">Назад</button>`;
-                }
+              }
+            } else {
+              content = "<p>Ничего не найдено.</p>";
+              if (page > 1 && (category < 3 || category === 4)) {
+                content += `<button onclick="fetchData(${category}, ${
+                  page - 1
+                })">Назад</button>`;
               }
             }
             document.getElementById("results").innerHTML = content;
           })
           .catch((err) => {
+            console.error(err);
             document.getElementById("results").innerHTML =
               "Ошибка загрузки данных.";
-            console.error(err);
           });
       }
-      function getSubData(subcategory) {
-        currentPage = 1;
-        currentCategory = subcategory;
-        fetchData(subcategory, 1);
 
-        fetch(`http://127.0.0.1:5000/get-data?category=${subcategory}&page=1`)
-          .then((response) => response.json())
-          .then((data) => {
-            let content = "<h2>Результаты:</h2>";
-            if (data.length && data[0].content) {
-              content += `<p>${data[0].content}</p>`; // Отображаем контент подкатегории
-            } else {
-              content += "<p>Информация отсутствует.</p>";
-            }
-            document.getElementById("results").innerHTML = content;
-          })
-          .catch((err) => {
-            document.getElementById("results").innerHTML =
-              "Ошибка загрузки данных.";
-            console.error(err);
-          });
+      function getSubData(subcategory) {
+        currentCategory = subcategory;
+        currentPage = 1;
+        fetchData(subcategory, 1);
       }
     </script>
+    <h1>Выберите категорию</h1>
+    <div class="buttons">
+      <button onclick="getData(0)">События</button>
+      <button onclick="getData(1)">Анонсы</button>
+      <button onclick="getData(2)">Объявления</button>
+      <button onclick="getData(3)">О нас</button>
+      <button onclick="getData(4)">Блог</button>
+    </div>
+
+    <div id="results"></div>
   </body>
 </html>
