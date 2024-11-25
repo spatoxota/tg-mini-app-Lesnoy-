@@ -73,13 +73,110 @@
         margin-top: 20px;
         border: 1px solid #ddd; /* Светло-серый цвет разделителя */
       }
+      #registrationForm {
+        display: flex;
+        flex-direction: column;
+        width: 80%;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      #registrationForm input {
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      #registrationForm button {
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .error {
+        color: red;
+        margin-top: 5px;
+      }
     </style>
   </head>
   <body>
+    <div id="registrationPage" style="display: block">
+      <div id="registrationForm">
+        <h2>Регистрация</h2>
+        <input type="text" id="firstName" placeholder="Имя" />
+        <div id="firstNameError" class="error"></div>
+        <input type="text" id="lastName" placeholder="Фамилия" />
+        <div id="lastNameError" class="error"></div>
+        <input type="email" id="email" placeholder="Почта" />
+        <div id="emailError" class="error"></div>
+        <button onclick="validateAndProceed()">Продолжить</button>
+      </div>
+    </div>
+
+    <div id="mainApp" style="display: none">
+      <h1>Выберите категорию</h1>
+      <div class="buttons">
+        <button onclick="getData(0)">События</button>
+        <button onclick="getData(1)">Анонсы</button>
+        <button onclick="getData(2)">Объявления</button>
+        <button onclick="getData(3)">О нас</button>
+        <button onclick="getData(4)">Блог</button>
+      </div>
+      <div id="results"></div>
+    </div>
     <script>
       const tg = window.Telegram.WebApp;
       let currentPage = 1;
       let currentCategory = 0;
+
+      function validateAndProceed() {
+        const firstName = document.getElementById("firstName").value.trim();
+        const lastName = document.getElementById("lastName").value.trim();
+        const email = document.getElementById("email").value.trim();
+
+        let isValid = true;
+
+        // Проверка имени
+        if (!firstName) {
+          document.getElementById("firstNameError").textContent =
+            "Введите имя.";
+          isValid = false;
+        } else {
+          document.getElementById("firstNameError").textContent = "";
+        }
+
+        // Проверка фамилии
+        if (!lastName) {
+          document.getElementById("lastNameError").textContent =
+            "Введите фамилию.";
+          isValid = false;
+        } else {
+          document.getElementById("lastNameError").textContent = "";
+        }
+
+        // Проверка почты
+        if (!email) {
+          document.getElementById("emailError").textContent =
+            "Введите электронную почту.";
+          isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          document.getElementById("emailError").textContent =
+            "Неверный формат почты.";
+          isValid = false;
+        } else {
+          document.getElementById("emailError").textContent = "";
+        }
+
+        if (isValid) {
+          tg.sendData(JSON.stringify({ firstName, lastName, email }));
+          document.getElementById("registrationPage").style.display = "none";
+          document.getElementById("mainApp").style.display = "block";
+        }
+      }
 
       function getData(category) {
         currentCategory = category;
@@ -96,7 +193,7 @@
           .then((response) => response.json())
           .then((data) => {
             const results = data.data;
-            const hasNext = data.has_next; // Получаем информацию о следующей странице
+            const hasNext = data.has_next;
             let content = "<h2>Результаты:</h2>";
 
             if (category === 3) {
@@ -110,15 +207,12 @@
             } else if (results.length) {
               results.forEach((item) => {
                 if (category >= 5) {
-                  //Обработка подкатегорий "О нас"
                   content += `<h3>${item.title}</h3><p>${item.content}</p><hr>`;
                 } else {
-                  // Обработка остальных категорий, включая блог
                   content += `<h3>${item[1]}</h3><p>${item[0]}</p><p>${item[2]}</p><hr>`;
                 }
               });
 
-              // Пагинация (только для категорий, отличных от "О нас")
               if (category < 3 || category === 4) {
                 content += '<div class="pagination">';
                 if (page > 1) {
@@ -127,7 +221,6 @@
                   })">Назад</button>`;
                 }
                 if (hasNext) {
-                  // Используем hasNext для проверки следующей страницы
                   content += `<button onclick="fetchData(${category}, ${
                     page + 1
                   })">Далее</button>`;
@@ -156,16 +249,9 @@
         currentPage = 1;
         fetchData(subcategory, 1);
       }
+      window.onload = () => {
+        // Форма регистрации уже видна, ничего делать не нужно
+      };
     </script>
-    <h1>Выберите категорию</h1>
-    <div class="buttons">
-      <button onclick="getData(0)">События</button>
-      <button onclick="getData(1)">Анонсы</button>
-      <button onclick="getData(2)">Объявления</button>
-      <button onclick="getData(3)">О нас</button>
-      <button onclick="getData(4)">Блог</button>
-    </div>
-
-    <div id="results"></div>
   </body>
 </html>
