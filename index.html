@@ -172,9 +172,29 @@
         }
 
         if (isValid) {
-          tg.sendData(JSON.stringify({ firstName, lastName, email }));
-          document.getElementById("registrationPage").style.display = "none";
-          document.getElementById("mainApp").style.display = "block";
+          fetch("http://127.0.0.1:5000/register", {
+            // Новый маршрут на backend
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ firstName, lastName, email }),
+          })
+            .then((response) => {
+              if (response.ok) {
+                // Проверяем успешный ответ
+                document.getElementById("registrationPage").style.display =
+                  "none";
+                document.getElementById("mainApp").style.display = "block";
+              } else {
+                // Обработка ошибки, например:
+                alert("Ошибка регистрации. Попробуйте еще раз.");
+              }
+            })
+            .catch((error) => {
+              console.error("Ошибка:", error);
+              alert("Ошибка регистрации. Попробуйте еще раз.");
+            });
         }
       }
 
