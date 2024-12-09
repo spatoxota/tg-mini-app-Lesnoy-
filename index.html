@@ -172,7 +172,7 @@
         }
 
         if (isValid) {
-          fetch("http://127.0.0.1:5000/register", {
+          fetch("https://dsdss.pythonanywhere.com/register", {
             // Новый маршрут на backend
             method: "POST",
             headers: {
@@ -207,9 +207,8 @@
       function fetchData(category, page) {
         document.getElementById("results").innerHTML = "Загрузка...";
 
-        fetch(
-          `http://127.0.0.1:5000/get-data?category=${category}&page=${page}`
-        )
+        fetch(`https://dsdss.pythonanywhere.com/get-data?category=${category}&page=${page}`)
+
           .then((response) => response.json())
           .then((data) => {
             const results = data.data;
