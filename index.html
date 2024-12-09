@@ -172,7 +172,7 @@
         }
 
         if (isValid) {
-          fetch("https://backend-0jas.onrender.com/register", {
+          fetch("http://127.0.0.1:5000/register", {
             // Новый маршрут на backend
             method: "POST",
             headers: {
@@ -207,7 +207,9 @@
       function fetchData(category, page) {
         document.getElementById("results").innerHTML = "Загрузка...";
 
-        fetch("https://backend-0jas.onrender.com/get-data?category=" + category + "&page=" + page, { ... })
+        fetch(
+          `http://127.0.0.1:5000/get-data?category=${category}&page=${page}`
+        )
 
           .then((response) => response.json())
           .then((data) => {
